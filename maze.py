@@ -44,7 +44,7 @@ if __name__ == "__main__":
 
         for i in range(windowSize):
             for j in range(windowSize):
-                if not pixels[i][j] > threshhold:
+                if pixels[i][j] <= threshold:
                     gfxdraw.pixel(screen, i, j, (255, 255, 255))
 
         pygame.display.flip()
