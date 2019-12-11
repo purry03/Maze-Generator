@@ -29,8 +29,8 @@ if __name__ == "__main__":
         i1 = i / 10 + offset_x
         for j in range(windowSize):
             j1 = j / 10 + offset_y
-            noise = abs(pnoise2(i1, j1))
-            pixels[i][j] = noise
+            pixels[i][j] = pnoise2(i1, j1)
+    np.abs(pixels, out=pixels)
 
     end = timer()
     print("%f seconds elapsed." % (end - start))
