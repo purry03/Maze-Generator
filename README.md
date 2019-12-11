@@ -9,4 +9,4 @@ noise (pip install noise)
 
 Run the script and wait for a few moments to allow it to generate the maze.
 
-![Demo Image](https://github.com/Perseus-Perry/Maze-Generator/sample.png)
+![Demo Image](https://github.com/Perseus-Perry/Maze-Generator/blob/master/sample.png)
