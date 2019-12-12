@@ -50,6 +50,30 @@ def generate_noise_array(size):
     return pixels
 
 
+def run_pygame():
+    pygame.init()
+    clock = pygame.time.Clock()
+    screen = pygame.display.set_mode(size)
+    pygame.display.set_caption("Maze generator")
+
+    runGame = True
+
+    while runGame:
+
+        # handle quit event
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                runGame = False
+
+        for i in range(size[0]):
+            for j in range(size[1]):
+                if pixels[i][j] <= threshold:
+                    gfxdraw.pixel(screen, i, j, (255, 255, 255))
+
+        pygame.display.flip()
+        clock.tick(60)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate perlin noise mazes")
     parser.add_argument('file_name', type=str, default=None, nargs='?',
@@ -58,9 +82,9 @@ if __name__ == "__main__":
                         help='Set the image width')
     parser.add_argument('-im_h', dest='height', type=int, default=500,
                         help='Set the image height')
-    parser.add_argument('-t', dest='threshold', type=int, default=0.1,
+    parser.add_argument('-t', dest='threshold', type=float, default=0.1,
                         help='Set the perlin noise threshold.')
-    parser.add_argument('-s', dest='seed', type=int, default=random.random(),
+    parser.add_argument('-s', dest='seed', type=float, default=random.random(),
                         help='Provide a seed to generate perlin maps.')
 
     args = parser.parse_args()
