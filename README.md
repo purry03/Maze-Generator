@@ -21,6 +21,6 @@ You can specify a random seed using -s, which can be any number.
 python maze.py file_name.png -im_w 500 -im_h 500 -t 0.1 -s 3459
 ```
 
-![Demo Image](https://github.com/Perseus-Perry/Maze-Generator/blob/master/small_sample.png)
+![Demo Image](./small_sample.png)
 
-![Demo Image](https://github.com/Perseus-Perry/Maze-Generator/blob/master/large_sample.png)
+![Demo Image](./large_sample.png)
