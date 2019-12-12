@@ -4,12 +4,17 @@ Invented by accident.
 Prerequisites:
 Python3
 PIL (pip install Pillow)
+
 numpy (pip install numpy)
+
 noise (pip install noise)
 
-Run the script with no arguments to display an image on screen and save it to disk.
+Run the script with no arguments to display an image on screen and save it to disk
+
 You can specify image dimensions with -im_w, -im_h for image width and height, respectively.
+
 You can specify a noise threshold, beyond which pixels will be black, by using -t.
+
 You can specify a random seed using -s, which can be any number.
 
 ```
