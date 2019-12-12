@@ -24,3 +24,12 @@ python maze.py file_name.png -im_w 500 -im_h 500 -t 0.1 -s 3459
 ![Demo Image](./small_sample.png)
 
 ![Demo Image](./large_sample.png)
+
+
+Scroller
+
+run script to start autoscrolling the image
+
+run script as:
+
+python scroller.py -f <maze image path>
