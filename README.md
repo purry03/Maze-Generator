@@ -3,6 +3,8 @@ Invented by accident.
 
 Prerequisites:
 Python3
+
+
 PIL (pip install Pillow)
 
 numpy (pip install numpy)
