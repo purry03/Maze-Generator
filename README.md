@@ -34,4 +34,4 @@ run script to start autoscrolling the image
 
 run script as:
 
-python scroller.py -f <maze image path>
+python scroller.py -f "maze image file name"
