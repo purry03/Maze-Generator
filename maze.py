@@ -1,4 +1,3 @@
-import pygame
 import numpy as np
 from noise import pnoise2
 import random
@@ -107,6 +106,7 @@ def generate_noise_array(size):
 
 
 def run_pygame(size):
+    import pygame
     pygame.init()
     clock = pygame.time.Clock()
     screen = pygame.display.set_mode(size)
@@ -139,9 +139,9 @@ if __name__ == "__main__":
                                     help="Run a scrolling image")
     image_or_scrolling.add_argument('file_name', type=str, default=None, nargs='?',
                         help='Output filename.')
-    parser.add_argument('-im_w', dest='width', type=int, default=50,
+    parser.add_argument('-im_w', dest='width', type=int, default=500,
                         help='Set the image width')
-    parser.add_argument('-im_h', dest='height', type=int, default=50,
+    parser.add_argument('-im_h', dest='height', type=int, default=500,
                         help='Set the image height')
     parser.add_argument('-t', dest='threshold', type=float, default=0.1,
                         help='Set the perlin noise threshold.')
