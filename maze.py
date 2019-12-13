@@ -4,6 +4,12 @@ import random
 import argparse
 
 
+def get_big_nums():
+    big_num = 2**16
+    offset_x = random.randint(-big_num, big_num)
+    offset_y = random.randint(-big_num, big_num)
+    return offset_x, offset_y
+
 def make_png(pixels):
     from PIL import Image
 
@@ -27,82 +33,80 @@ def save_png(file_name: str, im) -> None:
     im.save(file_name, 'PNG')
 
 
-def make_im_from_arr(image_arr, screen_array):
-    screen_array[:, :, 0][image_arr < threshold] = 255
-    screen_array[:, :, 0][image_arr >= threshold] = 0
+def make_im_from_arr(noise_map, screen_array):
+    import pygame
+    screen_array[:, :, 0][noise_map < threshold] = 255
+    screen_array[:, :, 0][noise_map >= threshold] = 0
     screen_array[:, :, 1] = screen_array[:, :, 0]
     screen_array[:, :, 2] = screen_array[:, :, 0]
     return pygame.surfarray.make_surface(screen_array)
 
 
-def update_matrix(pixels, row_index, true_index, offset_x, offset_y):
+def update_noise_map(noise_map, row_index, true_index, offset_x, offset_y):
     # Needs to replace a row with the correct offset.
     # To do this, we need the row / column.
-    if row_index == pixels.shape[0] // 2:
+    if row_index == noise_map.shape[0] // 2:
         # Update whole lower matrix.
         for i in range(size[0], size[0] * 2):
             i1 = (i + true_index) / 10 + offset_x
             for j in range(size[1], size[1] * 2):
                 j1 = (j + true_index) / 10 + offset_y
-                pixels[i][j] = pnoise2(i1, j1)
+                noise_map[i][j] = pnoise2(i1, j1)
         return true_index + size[0]
     else:
         y = (row_index + true_index) / 10 + offset_y
         for j in range(row_index, size[0] + row_index):
             x = (j + true_index) / 10 + offset_x
-            pixels[j][row_index] = pnoise2(x, y)
+            noise_map[j][row_index] = pnoise2(x, y)
         x = (row_index + true_index) / 10 + offset_x
         for j in range(row_index, size[0] + row_index):
             y = (j + true_index) / 10 + offset_y
-            pixels[row_index][j] = pnoise2(x, y)
+            noise_map[row_index][j] = pnoise2(x, y)
         return true_index
 
 
-def update_matrix_funky(pixels, row_index, true_index, offset_x, offset_y):
+def update_matrix_funky(noise_map, row_index, true_index, offset_x, offset_y):
     # Needs to replace a row with the correct offset.
     # To do this, we need the row / column.
-    if row_index == pixels.shape[0] // 2:
+    if row_index == noise_map.shape[0] // 2:
         # Update whole lower matrix.
         for i in range(size[0], size[0] * 2):
             i1 = i / 10 + offset_x
             for j in range(size[1], size[1] * 2):
                 j1 = j / 10 + offset_y
-                pixels[i][j] = pnoise2(i1, j1)
+                noise_map[i][j] = pnoise2(i1, j1)
     else:
         for j in range(row_index, size[0] + row_index):
             x = j / 10 + offset_x
-            pixels[j][row_index] = pnoise2(x, offset_y)
+            noise_map[j][row_index] = pnoise2(x, offset_y)
         for j in range(row_index, size[0] + row_index):
             y = j / 10 + offset_y
-            pixels[row_index][j] = pnoise2(offset_x, y)
+            noise_map[row_index][j] = pnoise2(offset_x, y)
     return true_index + 1
 
 
 def generate_diagonal_noise_array(size):
-    pixels = np.zeros((size[0] * 2, size[1] * 2))
-
-    offset_x = random.randint(0, 10000)
-    offset_y = random.randint(0, 10000)
+    noise_map = np.zeros((size[0] * 2, size[1] * 2))
+    offset_x, offset_y = get_big_nums()
     true_index = 0
     for i in range(size[0] + 1):
-        true_index = update_matrix(pixels, i, true_index, offset_x, offset_y)
-    np.abs(pixels, out=pixels)
-    return pixels, offset_x, offset_y, true_index
+        true_index = update_noise_map(noise_map, i, true_index, offset_x, offset_y)
+    np.abs(noise_map, out=noise_map)
+    return noise_map, offset_x, offset_y, true_index
 
 
 def generate_noise_array(size):
-    pixels = np.zeros(size)
+    noise_map = np.zeros(size)
 
-    offset_x = random.randint(0, 10000)
-    offset_y = random.randint(0, 10000)
+    offset_x, offset_y = get_big_nums()
 
     for i in range(size[0]):
         i1 = i / 10 + offset_x
         for j in range(size[1]):
             j1 = j / 10 + offset_y
-            pixels[i][j] = pnoise2(i1, j1)
-    np.abs(pixels, out=pixels)
-    return pixels
+            noise_map[i][j] = pnoise2(i1, j1)
+    np.abs(noise_map, out=noise_map)
+    return noise_map
 
 
 def run_pygame(size):
@@ -111,7 +115,7 @@ def run_pygame(size):
     clock = pygame.time.Clock()
     screen = pygame.display.set_mode(size)
     pygame.display.set_caption("Maze generator")
-    pixels, offset_x, offset_y, true_index = generate_noise_array(size)
+    noise_map, offset_x, offset_y, true_index = generate_noise_array(size)
     screen_array = np.zeros((size[0], size[1], 3), np.ubyte)
     run_game = True
     i = 0
@@ -121,11 +125,11 @@ def run_pygame(size):
             if event.type == pygame.QUIT:
                 run_game = False
 
-        image = make_im_from_arr(pixels[i:i + size[0], i:i + size[0]], screen_array)
-        # save_png("surf%i.png" % (i + true_index), make_png(pixels))
+        image = make_im_from_arr(noise_map[i:i + size[0], i:i + size[0]], screen_array)
+        # save_png("surf%i.png" % (i + true_index), make_png(noise_map))
         screen.blit(image, (0, 0))
         pygame.display.update()
-        true_index = update_matrix(pixels, i, true_index, offset_x, offset_y)
+        true_index = update_noise_map(noise_map, i, true_index, offset_x, offset_y)
         i %= size[0]
         i += 1
 
@@ -155,12 +159,12 @@ if __name__ == "__main__":
     if args.scroll:
         run_pygame(size)
     else:
-        pixels = generate_noise_array(size)
+        noise_map = generate_noise_array(size)
 
         if args.file_name:
-            save_png(args.file_name, make_png(pixels))
+            save_png(args.file_name, make_png(noise_map))
         else:
-            im = make_png(pixels)
+            im = make_png(noise_map)
             im.show()
             file_name = str(args.seed).replace(".", "_") + ".png"
-            save_png(file_name, make_png(pixels))
+            save_png(file_name, make_png(noise_map))
