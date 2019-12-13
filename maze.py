@@ -5,10 +5,11 @@ import argparse
 
 
 def get_big_nums():
-    big_num = 2**16
+    big_num = 2 ** 16
     offset_x = random.randint(-big_num, big_num)
     offset_y = random.randint(-big_num, big_num)
     return offset_x, offset_y
+
 
 def make_png(pixels):
     from PIL import Image
@@ -16,7 +17,7 @@ def make_png(pixels):
     size = pixels.shape
     im = Image.new('RGBA', size, 0)
     im_pixels = im.load()
-    im_arr = np.zeros(size).astype("ubyte")
+    im_arr = np.zeros(size).astype(np.ubyte)
     im_arr[pixels <= threshold] = 255
     for x in range(size[0]):
         for y in range(size[1]):
@@ -45,13 +46,20 @@ def make_im_from_arr(noise_map, screen_array):
 def update_noise_map(noise_map, row_index, true_index, offset_x, offset_y):
     # Needs to replace a row with the correct offset.
     # To do this, we need the row / column.
-    if row_index == noise_map.shape[0] // 2:
+    shape = noise_map.shape
+    size = (shape[0] // 2, shape[1] // 2)
+
+    if row_index == size[0]:
         # Update whole lower matrix.
         for i in range(size[0], size[0] * 2):
             i1 = (i + true_index) / 10 + offset_x
             for j in range(size[1], size[1] * 2):
                 j1 = (j + true_index) / 10 + offset_y
                 noise_map[i][j] = pnoise2(i1, j1)
+
+        np.abs(noise_map[size[0]:size[0] * 2, size[1]:size[1] * 2],
+               out=noise_map[size[0]:size[0] * 2, size[1]:size[1] * 2])
+
         return true_index + size[0]
     else:
         y = (row_index + true_index) / 10 + offset_y
@@ -62,6 +70,11 @@ def update_noise_map(noise_map, row_index, true_index, offset_x, offset_y):
         for j in range(row_index, size[0] + row_index):
             y = (j + true_index) / 10 + offset_y
             noise_map[row_index][j] = pnoise2(x, y)
+
+        np.abs(noise_map[row_index, row_index: size[0] + row_index],
+               out=noise_map[row_index, row_index: size[0] + row_index])
+        np.abs(noise_map[row_index: size[0] + row_index, row_index],
+               out=noise_map[row_index: size[0] + row_index, row_index])
         return true_index
 
 
@@ -75,13 +88,18 @@ def update_matrix_funky(noise_map, row_index, true_index, offset_x, offset_y):
             for j in range(size[1], size[1] * 2):
                 j1 = j / 10 + offset_y
                 noise_map[i][j] = pnoise2(i1, j1)
+        np.abs(noise_map[size[0]:size[0] * 2, size[1]:size[1] * 2],
+               out=noise_map[size[0]:size[0] * 2, size[1]:size[1] * 2])
     else:
         for j in range(row_index, size[0] + row_index):
             x = j / 10 + offset_x
             noise_map[j][row_index] = pnoise2(x, offset_y)
+        np.abs(noise_map[j, row_index: size[0] + row_index], out=noise_map[j, row_index: size[0] + row_index])
         for j in range(row_index, size[0] + row_index):
             y = j / 10 + offset_y
             noise_map[row_index][j] = pnoise2(offset_x, y)
+        np.abs(noise_map[row_index: size[0] + row_index, j], out=noise_map[row_index: size[0] + row_index, j])
+
     return true_index + 1
 
 
@@ -115,7 +133,7 @@ def run_pygame(size):
     clock = pygame.time.Clock()
     screen = pygame.display.set_mode(size)
     pygame.display.set_caption("Maze generator")
-    noise_map, offset_x, offset_y, true_index = generate_noise_array(size)
+    noise_map, offset_x, offset_y, true_index = generate_diagonal_noise_array(size)
     screen_array = np.zeros((size[0], size[1], 3), np.ubyte)
     run_game = True
     i = 0
@@ -130,8 +148,9 @@ def run_pygame(size):
         screen.blit(image, (0, 0))
         pygame.display.update()
         true_index = update_noise_map(noise_map, i, true_index, offset_x, offset_y)
-        i %= size[0]
         i += 1
+        if i == size[0] + 1:
+            i = 1
 
         clock.tick(60)
 
@@ -142,7 +161,7 @@ if __name__ == "__main__":
     image_or_scrolling.add_argument('--scroll', action='store_true',
                                     help="Run a scrolling image")
     image_or_scrolling.add_argument('file_name', type=str, default=None, nargs='?',
-                        help='Output filename.')
+                                    help='Output filename.')
     parser.add_argument('-im_w', dest='width', type=int, default=500,
                         help='Set the image width')
     parser.add_argument('-im_h', dest='height', type=int, default=500,
